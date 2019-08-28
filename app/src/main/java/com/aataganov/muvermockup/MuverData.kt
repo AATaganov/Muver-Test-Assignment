@@ -1,5 +1,6 @@
 package com.aataganov.muvermockup
 
+import android.text.format.DateUtils
 import kotlinx.coroutines.delay
 
 interface BackendApi {
@@ -37,7 +38,6 @@ class BackendApiImpl : BackendApi {
     }
 }
 
-
 interface DrivingManager {
     suspend fun executeCommand(command: DrivingManagerCommand): CommandExecutionResult
     suspend fun getState(): DrivingManagerState
@@ -45,7 +45,7 @@ interface DrivingManager {
 
 abstract class DrivingManagerCommand
 class DMAllCommand(val targetState: Boolean) : DrivingManagerCommand()
-class DMAppCommand(val app: String, public val targetState: Boolean) : DrivingManagerCommand()
+class DMAppCommand(val app: String, val targetState: Boolean) : DrivingManagerCommand()
 
 data class CommandExecutionResult(
     val isSuccess: Boolean
@@ -57,26 +57,44 @@ data class DrivingManagerState(
 )
 
 
-class DrivingManagerImpl : DrivingManager {
-    companion object{
-        private val State = DrivingManagerState(true, HashMap())
+class DrivingManagerImpl() : DrivingManager {
+    var applicationStates: HashMap<String, Boolean> = hashMapOf()
+
+    fun updateApplications(applications: List<String>){
+        val newHash: HashMap<String, Boolean> = hashMapOf()
+        applications.forEach {
+            newHash[it] = applicationStates[it] ?: false
+        }
+        applicationStates = newHash
     }
+
     override suspend fun executeCommand(command: DrivingManagerCommand): CommandExecutionResult {
         delay(500)
+
+        //imitate failure
+        if(simulateFail()){
+            return CommandExecutionResult(false)
+        }
+
         if (command is DMAllCommand) {
-            State.applicationStates.keys.forEach {key ->
-                State.applicationStates[key] = command.targetState
+            applicationStates.keys.forEach {key ->
+                applicationStates[key] = command.targetState
             }
         }
         else if (command is DMAppCommand) {
-            State.applicationStates[command.app] = command.targetState
+            applicationStates[command.app] = command.targetState
         }
         delay(500)
         return CommandExecutionResult(true)
     }
 
+    private fun simulateFail(): Boolean{
+        val time = System.currentTimeMillis()
+        return (time % DateUtils.SECOND_IN_MILLIS < 100)
+    }
+
     override suspend fun getState(): DrivingManagerState {
-        val drivingState = State.applicationStates.any { it.value }
-        return DrivingManagerState(drivingState, State.applicationStates)
+        val drivingState = applicationStates.any { it.value }
+        return DrivingManagerState(drivingState, applicationStates)
     }
 }

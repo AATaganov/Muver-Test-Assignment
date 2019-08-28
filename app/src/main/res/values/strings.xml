@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">MuverMockup</string>
+
+    <string name="main_activity_bottom_bar_home">Home</string>
+    <string name="main_activity_bottom_bar_profile">Profile</string>
+
+
+    <string name="fragment_home_title">Home</string>
+    <string name="fragment_home_no_aggregators">You have not added any aggregators yet.</string>
+    <string name="fragment_home_all_aggregators_state_change_fail">Failed to change aggregators state</string>
+    <string name="fragment_home_single_aggregator_state_change_fail">Failed to change aggregator state</string>
+
+    <string name="fragment_profile_title">Profile</string>
+    <string name="fragment_profile_id_template">Id: %1$d</string>
+    <string name="fragment_profile_phone_template">Phone: %1$s</string>
+    <string name="fragment_profile_checkboxes_enabled">Toggle is enabled</string>
+    <string name="fragment_profile_checkboxes_disabled">Toggle disabled</string>
 </resources>
