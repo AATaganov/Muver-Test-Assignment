@@ -40,7 +40,10 @@ class UserInfoManager private constructor(context: Context) {
         prefs.edit().clear().apply()
     }
 
-    fun updateToken(newToken: String){
+    fun updateUserInfo(token: String, phone: String){
+        prefs.edit().putString(KEY_TOKEN,token).putString(KEY_PHONE,phone).apply()
+    }
+    private fun updateToken(newToken: String){
         prefs.edit().putString(KEY_TOKEN, newToken).apply()
     }
 
@@ -55,6 +58,10 @@ class UserInfoManager private constructor(context: Context) {
 
     fun getToken(): String{
         return prefs.getString(KEY_TOKEN, "") ?: ""
+    }
+
+    fun getPhone(): String{
+        return prefs.getString(KEY_PHONE, "") ?: ""
     }
 
     fun isLoggedIn(): Boolean{

@@ -29,6 +29,9 @@ class FragmentProfile: BaseMainActivityFragment() {
         checkbox_trial_mode.setOnClickListener {
             activityViewModel.simulateTrialChangePush(checkbox_trial_mode.isChecked)
         }
+        btn_logout.setOnClickListener {
+            fragmentsHolder?.logOut()
+        }
     }
     private fun subscribeToProfile(){
         activityViewModel.profileLiveData.observe(this, Observer<Profile> { result ->
@@ -41,7 +44,7 @@ class FragmentProfile: BaseMainActivityFragment() {
 
     private fun updateData(profile: Profile) {
         txt_profile_id.text = getString(R.string.fragment_profile_id_template, profile.id)
-        txt_phone.text = getString(R.string.fragment_profile_phone_template, profile.phone)
+        txt_phone.text = getString(R.string.fragment_profile_phone_template, profile.phone, activityViewModel.userInfoManager.getPhone())
         checkbox_trial_mode.isChecked = profile.isEnabled
         when(profile.isEnabled) {
             true -> txt_enabled.setText(R.string.fragment_profile_checkboxes_enabled)

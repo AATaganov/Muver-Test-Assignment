@@ -12,7 +12,7 @@
 
     <string name="fragment_profile_title">Profile</string>
     <string name="fragment_profile_id_template">Id: %1$d</string>
-    <string name="fragment_profile_phone_template">Phone: %1$s</string>
+    <string name="fragment_profile_phone_template">Phone: %1$s %2$s</string>
     <string name="fragment_profile_checkboxes_enabled">Toggle is enabled</string>
     <string name="fragment_profile_checkboxes_disabled">Toggle disabled</string>
 </resources>

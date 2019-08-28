@@ -169,7 +169,7 @@ abstract class BaseFragment: Fragment(){
 
 
 interface FragmentsHolder {
-
+    fun logOut()
     fun goBack(caller: BaseFragment)
     fun setToolbarTitle(title: String)
     fun setToolbarTitle(@StringRes titleRes: Int)
