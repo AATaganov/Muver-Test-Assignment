@@ -40,6 +40,12 @@ class FragmentManagerMainActivity(supportFragmentManager: FragmentManager,
                 return map[tag]
             }
         }
+        fun getBottomIndex(): Int {
+            return when (this){
+                HOME -> BAR_INDEX_HOME
+                PROFILE -> BAR_INDEX_PROFILE
+            }
+        }
     }
 
     override fun getByTag(tag: String): ContainerFragment? {

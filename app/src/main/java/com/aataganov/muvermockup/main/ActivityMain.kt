@@ -127,9 +127,11 @@ class ActivityMain : BaseActivity(), FragmentsHolder, BaseFragmentManager.Fragme
     }
 
     private fun selectBottomBarIndexWithoutAction(index: Int){
-        bottom_bar.setTabSelectedListener(null)
-        bottom_bar.selectTab(index)
-        initBottomBarSelectionListener()
+        if(index >= 0) {
+            bottom_bar.setTabSelectedListener(null)
+            bottom_bar.selectTab(index)
+            initBottomBarSelectionListener()
+        }
     }
 
     private fun onSelectionClicked(position: Int) {
@@ -141,6 +143,8 @@ class ActivityMain : BaseActivity(), FragmentsHolder, BaseFragmentManager.Fragme
         containerFields: BaseFragmentManager.ContainerFragment,
         fragment: BaseFragment
     ) {
-
+        if(containerFields is FragmentManagerMainActivity.MainActivityFragmentEnum){
+            selectBottomBarIndexWithoutAction(containerFields.getBottomIndex())
+        }
     }
 }
