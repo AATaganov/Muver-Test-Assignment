@@ -139,7 +139,7 @@ class ActivityMain : BaseActivity(), FragmentsHolder, BaseFragmentManager.Fragme
     }
 
     //function to show/hide toolbars.
-    override fun updateItemsVisibility(
+    override fun updateHolderViews(
         containerFields: BaseFragmentManager.ContainerFragment,
         fragment: BaseFragment
     ) {

@@ -12,7 +12,7 @@ abstract class BaseFragmentManager(private val supportFragmentManager: FragmentM
         val LOG_TAG = BaseFragmentManager::class.java.simpleName
     }
     interface FragmentChangeListener {
-        fun updateItemsVisibility(containerFields: ContainerFragment, fragment: BaseFragment)
+        fun updateHolderViews(containerFields: ContainerFragment, fragment: BaseFragment)
     }
 
     var canPerformTransactions: Boolean = false
@@ -81,7 +81,7 @@ abstract class BaseFragmentManager(private val supportFragmentManager: FragmentM
             transaction.add(getFragmentContainerId(), newFragment, newFragmentClass.getTag())
             // Commit the transaction
             transaction.commitAllowingStateLoss()
-            listener.updateItemsVisibility(newFragmentClass, newFragment)
+            listener.updateHolderViews(newFragmentClass, newFragment)
         }
         return newFragment
     }
@@ -92,7 +92,7 @@ abstract class BaseFragmentManager(private val supportFragmentManager: FragmentM
         }
         supportFragmentManager.beginTransaction().show(fragment).commitAllowingStateLoss()
         fragment.onReshow(bundle)
-        listener.updateItemsVisibility(newFragmentClass, fragment)
+        listener.updateHolderViews(newFragmentClass, fragment)
     }
     private fun removeFragmentFromBackStack(): Boolean {
         val previousFragment = fragmentsTagsBackStack[0] ?: return false;
