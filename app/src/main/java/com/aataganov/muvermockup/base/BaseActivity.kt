@@ -11,7 +11,7 @@ import android.support.v7.app.AppCompatActivity
 import android.widget.Toast
 import com.aataganov.muvermockup.helpers.CommonHelper
 import com.aataganov.muvermockup.login.ActivityLogin
-import com.aataganov.muvermockup.singletones.UserInfoManager
+import com.aataganov.muvermockup.singletones.UserInfoManagerImpl
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -24,13 +24,11 @@ abstract class BaseActivity : AppCompatActivity() {
     internal var defaultBag: CompositeDisposable = CompositeDisposable()
     private lateinit var connectivityManager:ConnectivityManager
     private val activityJob = Job()
-    internal lateinit var userInfoManager: UserInfoManager
     var activityScope = CoroutineScope(Dispatchers.Main + activityJob)
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        userInfoManager = UserInfoManager.getInstance(this)
         connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     }
 
@@ -132,9 +130,15 @@ abstract class BaseActivity : AppCompatActivity() {
         return dialog
     }
 
-    open fun logOut() {
-        userInfoManager.clearPrefs()
-        gotoLogin()
+    fun logOut() {
+        activityScope.launch(Dispatchers.Default) {
+            logOutPreparations()
+            gotoLogin()
+        }
+    }
+
+    open suspend fun logOutPreparations(){
+        UserInfoManagerImpl.getInstance(this).clearPrefs()
     }
 
     fun gotoLogin(){

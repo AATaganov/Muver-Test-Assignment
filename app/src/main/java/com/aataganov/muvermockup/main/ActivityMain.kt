@@ -1,23 +1,28 @@
 package com.aataganov.muvermockup.main
 
 import android.os.Bundle
+import android.support.v4.app.FragmentManager
 import com.aataganov.muvermockup.R
-import com.aataganov.muvermockup.base.BaseActivity
-import com.aataganov.muvermockup.base.BaseFragmentManager
-import com.aataganov.muvermockup.base.BaseFragment
-import com.aataganov.muvermockup.base.FragmentsHolder
+import com.aataganov.muvermockup.base.*
+import com.aataganov.muvermockup.main.fragments.MainActivityFragmentHolder
 import com.ashokvarma.bottomnavigation.BottomNavigationBar
 import com.ashokvarma.bottomnavigation.BottomNavigationItem
 import kotlinx.android.synthetic.main.activity_main.*
 
-class ActivityMain : BaseActivity(), FragmentsHolder, BaseFragmentManager.FragmentChangeListener {
-    companion object{
-        const val ARG_SELECTED_FRAGMENT_NAME = "FragmentName"
-        const val ARG_SELECTED_FRAGMENT_BUNDLE = "FragmentBundle"
+class ActivityMain : BaseFragmentHolderActivity(), MainActivityFragmentHolder {
+    override fun getFragmentManagerImplementation(
+        supportFragmentManager: FragmentManager,
+        listener: BaseFragmentManagerImpl.FragmentChangeListener
+    ): BaseFragmentManager {
+        return FragmentManagerMainActivityImpl(supportFragmentManager, listener)
     }
 
-    private var myFragmentManager: FragmentManagerMainActivity? = null
+    var fragmentsRouter: RouterMainActivity? = null
+    private set
     private lateinit var mainActivityViewModel: ViewModelMainActivity
+    override fun initRouter(fragmentManager: BaseFragmentManager) {
+        fragmentsRouter = RouterMainActivityImpl(fragmentManager)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,66 +32,8 @@ class ActivityMain : BaseActivity(), FragmentsHolder, BaseFragmentManager.Fragme
         initToolbar()
     }
 
-    override fun goBack(caller: BaseFragment) {
-        myFragmentManager?.currentFragment?.let {
-            if(it == caller){
-                onBackPressed()
-            }
-        }
-    }
-
-    override fun onResume() {
-        checkIfFragmentsAreNotDisplayed()
-        super.onResume()
-    }
-
     private fun initToolbar() {
         setSupportActionBar(main_toolbar)
-    }
-
-    private fun initFragmentManager(){
-        myFragmentManager =
-            FragmentManagerMainActivity(supportFragmentManager, this)
-        myFragmentManager?.initFragments()
-    }
-    private fun checkIfFragmentsAreNotDisplayed(){
-        if(myFragmentManager?.currentFragment == null){
-            myFragmentManager?.resetFragmentByIndex(0)
-        }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle?) {
-        outState?.run {
-            myFragmentManager?.currentFragment?.let {
-                val container = FragmentManagerMainActivity.MainActivityFragmentEnum.getByTag(it.tag) ?: return@let
-                putString(ARG_SELECTED_FRAGMENT_NAME,container.getTag())
-                putBundle(ARG_SELECTED_FRAGMENT_BUNDLE, it.buildRecreateBundle())
-            }
-        }
-        // Always call the superclass so it can save the view hierarchy state
-        super.onSaveInstanceState(outState)
-    }
-
-    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
-        savedInstanceState?.let {
-                bundle ->
-            onRestoreBundle(bundle)
-        }
-        super.onRestoreInstanceState(savedInstanceState)
-    }
-    private fun onRestoreBundle(restoreBundle: Bundle){
-        restoreBundle.getString(ARG_SELECTED_FRAGMENT_NAME)?.let {
-            val container = FragmentManagerMainActivity.MainActivityFragmentEnum.getByTag(it) ?: return@let
-            myFragmentManager?.addFragment(container, restoreBundle.getBundle(ARG_SELECTED_FRAGMENT_BUNDLE))
-        }
-    }
-
-    override fun setToolbarTitle(title: String) {
-        supportActionBar?.title = title
-    }
-
-    override fun setToolbarTitle(titleRes: Int) {
-        supportActionBar?.setTitle(titleRes)
     }
 
     private fun initTabs() {
@@ -135,16 +82,16 @@ class ActivityMain : BaseActivity(), FragmentsHolder, BaseFragmentManager.Fragme
     }
 
     private fun onSelectionClicked(position: Int) {
-        myFragmentManager?.resetFragmentByIndex(position)
+        holderFragmentManager?.resetFragmentByIndex(position)
     }
 
     //function to show/hide toolbars.
     override fun updateHolderViews(
-        containerFields: BaseFragmentManager.ContainerFragment,
+        containerFields: ContainerFragment,
         fragment: BaseFragment
     ) {
-        if(containerFields is FragmentManagerMainActivity.MainActivityFragmentEnum){
-            selectBottomBarIndexWithoutAction(containerFields.getBottomIndex())
+        if(containerFields is MainActivityFragmentsEnum){
+            selectBottomBarIndexWithoutAction(containerFields.bottomIndex)
         }
     }
 }

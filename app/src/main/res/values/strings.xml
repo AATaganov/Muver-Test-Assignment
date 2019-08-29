@@ -5,6 +5,8 @@
     <string name="main_activity_bottom_bar_profile">Profile</string>
 
 
+    <string name="fragment_login_fail_to_login">Failed to log in. Check your internet connection and try again</string>
+
     <string name="fragment_home_title">Home</string>
     <string name="fragment_home_no_aggregators">You have not added any aggregators yet.</string>
     <string name="fragment_home_all_aggregators_state_change_fail">Failed to change aggregators state</string>

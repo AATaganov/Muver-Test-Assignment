@@ -41,6 +41,7 @@ class BackendApiImpl : BackendApi {
 interface DrivingManager {
     suspend fun executeCommand(command: DrivingManagerCommand): CommandExecutionResult
     suspend fun getState(): DrivingManagerState
+    fun updateApplications(applications: List<String>)
 }
 
 abstract class DrivingManagerCommand
@@ -57,10 +58,12 @@ data class DrivingManagerState(
 )
 
 
-class DrivingManagerImpl() : DrivingManager {
+class DrivingManagerImpl : DrivingManager {
+
+
     var applicationStates: HashMap<String, Boolean> = hashMapOf()
 
-    fun updateApplications(applications: List<String>){
+    override fun updateApplications(applications: List<String>){
         val newHash: HashMap<String, Boolean> = hashMapOf()
         applications.forEach {
             newHash[it] = applicationStates[it] ?: false

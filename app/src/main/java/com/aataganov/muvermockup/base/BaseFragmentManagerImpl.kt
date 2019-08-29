@@ -6,38 +6,33 @@ import android.support.v4.app.FragmentManager
 import android.util.Log
 import java.util.*
 
-abstract class BaseFragmentManager(private val supportFragmentManager: FragmentManager, private val listener: FragmentChangeListener) {
+abstract class BaseFragmentManagerImpl(private val supportFragmentManager: FragmentManager, private val listener: FragmentChangeListener) : BaseFragmentManager {
 
     companion object{
-        val LOG_TAG = BaseFragmentManager::class.java.simpleName
+        val LOG_TAG = BaseFragmentManagerImpl::class.java.simpleName
     }
     interface FragmentChangeListener {
         fun updateHolderViews(containerFields: ContainerFragment, fragment: BaseFragment)
     }
 
-    var canPerformTransactions: Boolean = false
-    var currentFragment: BaseFragment? = null
-        internal set;
+    override var canPerformTransactions: Boolean = false
+    internal var currentFragment: BaseFragment? = null
     private val fragmentsTagsBackStack = ArrayList<String>()
 
-    interface ContainerFragment{
-        fun getFragmentClass(): Class<*>
-        fun getTag(): String
+
+    private var conteinersMap: Map<String, ContainerFragment> = initFragmentsMap()
+    abstract fun initFragmentsMap(): Map<String, ContainerFragment>
+
+    private fun getByClassName(tag: String): ContainerFragment?{
+        return conteinersMap[tag]
     }
 
-    abstract fun getByTag(tag: String): ContainerFragment?
     @IdRes
     abstract fun getFragmentContainerId(): Int
-    abstract fun reset(): Boolean
 
-    fun initFragments() {
-        canPerformTransactions = true
-        clearAllFragments()
-        currentFragment = null
-    }
     private fun setFragment(newFragmentClass: ContainerFragment, bundle: Bundle?) {
         try {
-            val fragmentItStack = supportFragmentManager.findFragmentByTag(newFragmentClass.getTag()) as BaseFragment?
+            val fragmentItStack = supportFragmentManager.findFragmentByTag(newFragmentClass.getClassName()) as BaseFragment?
 
             currentFragment?.let{
                 //if the other fragment is visible, hide it.
@@ -57,7 +52,7 @@ abstract class BaseFragmentManager(private val supportFragmentManager: FragmentM
         }
     }
     private fun createFragment(containerFragment: ContainerFragment, bundle: Bundle?): BaseFragment? {
-        var newFragment: BaseFragment? = null
+        val newFragment: BaseFragment?
         try {
             newFragment = containerFragment.getFragmentClass().newInstance() as BaseFragment
         } catch (e: InstantiationException) {
@@ -78,7 +73,7 @@ abstract class BaseFragmentManager(private val supportFragmentManager: FragmentM
         if (newFragment != null) {
             val transaction = supportFragmentManager.beginTransaction()
             // Replace whatever is in the fragment_container view with this fragment
-            transaction.add(getFragmentContainerId(), newFragment, newFragmentClass.getTag())
+            transaction.add(getFragmentContainerId(), newFragment, newFragmentClass.getClassName())
             // Commit the transaction
             transaction.commitAllowingStateLoss()
             listener.updateHolderViews(newFragmentClass, newFragment)
@@ -94,22 +89,18 @@ abstract class BaseFragmentManager(private val supportFragmentManager: FragmentM
         fragment.onReshow(bundle)
         listener.updateHolderViews(newFragmentClass, fragment)
     }
-    private fun removeFragmentFromBackStack(): Boolean {
-        val previousFragment = fragmentsTagsBackStack[0] ?: return false;
+    private fun removeFragmentFromBackStack(){
+        val previousFragment = fragmentsTagsBackStack.getOrNull(0) ?: return
         fragmentsTagsBackStack.removeAt(0)
-        val container =
-                getByTag(
-                        previousFragment
-                )
-        if (container == null) {
-            return reset()
-        }
+        val container = getByClassName(previousFragment) ?: return resetToRoot()
         setFragment(container, null)
-        return false
+        return
     }
+
     internal fun clearBackStack() {
         fragmentsTagsBackStack.clear()
     }
+
     internal fun clearAllFragments() {
         clearBackStack()
         val transaction = supportFragmentManager.beginTransaction()
@@ -123,33 +114,42 @@ abstract class BaseFragmentManager(private val supportFragmentManager: FragmentM
         }
         transaction.commitNow()
     }
-    fun moveBack() : Boolean{
+    internal fun isCurrentFragmentClass(value: ContainerFragment): Boolean {
+        val strongFragment = currentFragment ?: return false
+        return strongFragment::class.java.simpleName == value.getClassName()
+    }
+
+    override fun initFragments() {
+        canPerformTransactions = true
+        clearAllFragments()
+        currentFragment = null
+    }
+
+    override fun moveBack(){
         currentFragment?.let {
             if(!it.isReadyToCloseOnBackPress()){
-                return false
+                return
             }
         }
         return if (fragmentsTagsBackStack.isNotEmpty()) {
             removeFragmentFromBackStack()
         } else {
-            reset()
+            resetToRoot()
         }
     }
-    fun addFragment(newFragmentClass: ContainerFragment, bundle: Bundle?) {
+
+    override fun addFragment(newFragmentClass: ContainerFragment, bundle: Bundle?) {
         if(!canPerformTransactions){
             return
         }
         currentFragment?.tag?.let {
-            tag ->
+                tag ->
             fragmentsTagsBackStack.add(0, tag)
         }
         setFragment(newFragmentClass, bundle)
     }
-    private fun isCurrentFragmentClass(value: ContainerFragment): Boolean {
-        val unwrapedFragment = currentFragment ?: return false;
-        return unwrapedFragment::class.java.simpleName.equals(value.getTag())
-    }
-    fun resetFragment(newFragmentClass: ContainerFragment, bundle: Bundle? = null) {
+
+    override fun resetFragment(newFragmentClass: ContainerFragment, bundle: Bundle?) {
         if(!canPerformTransactions){
             return
         }
@@ -160,4 +160,39 @@ abstract class BaseFragmentManager(private val supportFragmentManager: FragmentM
             setFragment(newFragmentClass, bundle)
         }
     }
+
+    override fun getFragmentContainer(className: String): ContainerFragment? {
+        return getByClassName(className)
+    }
+
+    override fun getCurrentFragment(): BaseFragment? {
+        return currentFragment
+    }
+
+    override fun resetFragmentByIndex(position: Int) {
+        getFragmentByIndex(position)?.let {
+            resetFragment(it,null)
+        }
+    }
+
+    abstract fun getFragmentByIndex(index: Int): ContainerFragment?
+}
+
+interface ContainerFragment{
+    fun getFragmentClass(): Class<*>
+    fun getClassName(): String{
+        return getFragmentClass().simpleName
+    }
+}
+interface BaseFragmentManager{
+    var canPerformTransactions: Boolean
+    fun resetToRoot()
+    fun resetFragmentByIndex(position: Int)
+    fun resetFragment(newFragmentClass: ContainerFragment, bundle: Bundle? = null)
+    fun addFragment(newFragmentClass: ContainerFragment, bundle: Bundle?)
+    fun moveBack()
+    fun isReadyToFinish():Boolean
+    fun initFragments()
+    fun getCurrentFragment(): BaseFragment?
+    fun getFragmentContainer(className: String): ContainerFragment?
 }

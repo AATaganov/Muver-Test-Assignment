@@ -34,7 +34,7 @@ class FragmentProfile: BaseMainActivityFragment() {
         }
     }
     private fun subscribeToProfile(){
-        activityViewModel.profileLiveData.observe(this, Observer<Profile> { result ->
+        activityViewModel.getProfileLiveData().observe(this, Observer<Profile> { result ->
             result?.let {
                 updateData(it)
                 return@Observer
@@ -44,7 +44,7 @@ class FragmentProfile: BaseMainActivityFragment() {
 
     private fun updateData(profile: Profile) {
         txt_profile_id.text = getString(R.string.fragment_profile_id_template, profile.id)
-        txt_phone.text = getString(R.string.fragment_profile_phone_template, profile.phone, activityViewModel.userInfoManager.getPhone())
+        txt_phone.text = getString(R.string.fragment_profile_phone_template, profile.phone, activityViewModel.getUserPhone())
         checkbox_trial_mode.isChecked = profile.isEnabled
         when(profile.isEnabled) {
             true -> txt_enabled.setText(R.string.fragment_profile_checkboxes_enabled)

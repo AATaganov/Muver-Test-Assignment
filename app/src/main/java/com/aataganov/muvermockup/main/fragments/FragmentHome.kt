@@ -7,7 +7,7 @@ import android.support.v7.widget.RecyclerView
 import com.aataganov.muvermockup.Profile
 import com.aataganov.muvermockup.R
 import com.aataganov.muvermockup.adapters.AdapterAggregatorsList
-import com.aataganov.muvermockup.main.ViewModelMainActivity
+import com.aataganov.muvermockup.main.DriverManagerUpdateStatuses
 import com.aataganov.muvermockup.models.ModelAggregatorState
 import com.aataganov.muvermockup.utils.DriverManagerUtil
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -83,12 +83,12 @@ class FragmentHome: BaseMainActivityFragment(), AdapterAggregatorsList.Aggregato
         defaultDisposeBag.add(activityViewModel.getDriverManagerSubscription()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe ({ status ->
-                if(status == ViewModelMainActivity.DriverManagerUpdateStatuses.SINGLE_UPDATE_SUCCESS && adapter.dataList.isNotEmpty()){
+                if(status == DriverManagerUpdateStatuses.SINGLE_UPDATE_SUCCESS && adapter.dataList.isNotEmpty()){
                     return@subscribe
                 }
                 when (status){
-                    ViewModelMainActivity.DriverManagerUpdateStatuses.SINGLE_UPDATE_FAIL -> onSingleAggregatorUpdateFail()
-                    ViewModelMainActivity.DriverManagerUpdateStatuses.ALL_UPDATE_FAIL -> onAllAggregatorsUpdateFail()
+                    DriverManagerUpdateStatuses.SINGLE_UPDATE_FAIL -> onSingleAggregatorUpdateFail()
+                    DriverManagerUpdateStatuses.ALL_UPDATE_FAIL -> onAllAggregatorsUpdateFail()
                 }
                 refreshDriverManager()
             }, {
@@ -106,7 +106,7 @@ class FragmentHome: BaseMainActivityFragment(), AdapterAggregatorsList.Aggregato
     }
 
     private fun subscribeToProfile(){
-        activityViewModel.profileLiveData.observe(this, Observer<Profile> { result ->
+        activityViewModel.getProfileLiveData().observe(this, Observer<Profile> { result ->
             result?.let {
                 checkbox_all_aggregators.isEnabled = it.isEnabled
                 adapter.updateCheckboxes(it.isEnabled)
@@ -117,7 +117,7 @@ class FragmentHome: BaseMainActivityFragment(), AdapterAggregatorsList.Aggregato
 
     private fun refreshDriverManager() {
         fragmentScope.launch(Dispatchers.IO){
-            val newState = activityViewModel.drivingManager.getState()
+            val newState = activityViewModel.getDrivingManagerState()
             val statesList = DriverManagerUtil.buildAggregatorStateList(newState.applicationStates)
             withContext(Dispatchers.Main){
                 adapter.updateData(statesList)

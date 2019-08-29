@@ -15,8 +15,6 @@ import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.*
 
 abstract class BaseFragment: Fragment(){
-
-    internal var fragmentsHolder: FragmentsHolder? = null
     internal var defaultDisposeBag: CompositeDisposable = CompositeDisposable()
     internal var longDisposeBag: CompositeDisposable = CompositeDisposable()
 
@@ -25,12 +23,7 @@ abstract class BaseFragment: Fragment(){
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is FragmentsHolder) {
-            recreateLongDisposeBag()
-            fragmentsHolder = context
-        } else {
-            throw RuntimeException(context.toString() + " must implement FragmentsHolder")
-        }
+        recreateLongDisposeBag()
     }
     override fun onDetach() {
         detachActions()
@@ -41,9 +34,11 @@ abstract class BaseFragment: Fragment(){
         detachActions()
         super.onDestroy()
     }
+    abstract fun getFragmentsHolder(): FragmentsHolder?
+    abstract fun clearFragmentsHolder()
 
-    fun detachActions(){
-        fragmentsHolder = null
+    open fun detachActions(){
+        clearFragmentsHolder()
         CommonHelper.cancelJob(fragmentJob)
         CommonHelper.unsubscribeDisposeBag(defaultDisposeBag)
         CommonHelper.unsubscribeDisposable(longDisposeBag)
@@ -98,11 +93,11 @@ abstract class BaseFragment: Fragment(){
     }
 
     fun setToolbarTitle(@StringRes titleRes: Int){
-        fragmentsHolder?.setToolbarTitle(titleRes)
+        getFragmentsHolder()?.setToolbarTitle(titleRes)
     }
 
     fun setToolbarTitle(title: String){
-        fragmentsHolder?.setToolbarTitle(title)
+        getFragmentsHolder()?.setToolbarTitle(title)
     }
 
     open fun shouldShowOptionsMenu(): Boolean {
@@ -114,15 +109,15 @@ abstract class BaseFragment: Fragment(){
     }
 
     fun goBack() {
-        fragmentsHolder?.goBack(this)
+        getFragmentsHolder()?.goBack(this)
     }
 
     internal fun showToast(message: String) {
-        fragmentsHolder?.showToast(message)
+        getFragmentsHolder()?.showToast(message)
     }
 
     internal fun showToast(@StringRes messageId: Int) {
-        fragmentsHolder?.showToast(messageId)
+        getFragmentsHolder()?.showToast(messageId)
     }
 
     override fun onResume() {
@@ -169,7 +164,6 @@ abstract class BaseFragment: Fragment(){
 
 
 interface FragmentsHolder {
-    fun logOut()
     fun goBack(caller: BaseFragment)
     fun setToolbarTitle(title: String)
     fun setToolbarTitle(@StringRes titleRes: Int)

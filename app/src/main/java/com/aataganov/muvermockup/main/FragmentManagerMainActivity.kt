@@ -2,69 +2,48 @@ package com.aataganov.muvermockup.main
 
 import android.support.v4.app.FragmentManager
 import com.aataganov.muvermockup.R
-import com.aataganov.muvermockup.base.BaseFragmentManager
+import com.aataganov.muvermockup.base.BaseFragmentManagerImpl
+import com.aataganov.muvermockup.base.ContainerFragment
 import com.aataganov.muvermockup.main.fragments.FragmentHome
 import com.aataganov.muvermockup.main.fragments.FragmentProfile
 
-class FragmentManagerMainActivity(supportFragmentManager: FragmentManager,
-                                  listener: FragmentChangeListener): BaseFragmentManager(supportFragmentManager, listener) {
+class FragmentManagerMainActivityImpl(supportFragmentManager: FragmentManager, listener: FragmentChangeListener):
+                            BaseFragmentManagerImpl(supportFragmentManager, listener) {
+    override fun isReadyToFinish(): Boolean {
+        return isCurrentFragmentClass(MainActivityFragmentsEnum.HOME)
+    }
+
     companion object {
         const val BAR_INDEX_HOME: Int = 0
         const val BAR_INDEX_PROFILE: Int = 1
     }
-    enum class MainActivityFragmentEnum constructor(private val fragmentClassInstance: Class<*>): ContainerFragment{
-        HOME(FragmentHome::class.java),
-        PROFILE(FragmentProfile::class.java);
-
-        override fun getFragmentClass(): Class<*> {
-            return fragmentClassInstance
-        }
-
-        override fun getTag(): String {
-            return fragmentClassInstance.simpleName
-        }
-
-        companion object {
-            val map = values().associateBy(
-                MainActivityFragmentEnum::getTag)
-
-            fun getFragmentByIndex(index: Int) : ContainerFragment?{
-                return when(index){
-                    BAR_INDEX_HOME -> HOME
-                    BAR_INDEX_PROFILE -> PROFILE
-                    else -> null
-                }
-            }
-            fun getByTag(value: String?): ContainerFragment?{
-                val tag = value?: return null
-                return map[tag]
-            }
-        }
-        fun getBottomIndex(): Int {
-            return when (this){
-                HOME -> BAR_INDEX_HOME
-                PROFILE -> BAR_INDEX_PROFILE
-            }
-        }
-    }
-
-    override fun getByTag(tag: String): ContainerFragment? {
-        return MainActivityFragmentEnum.map[tag]
+    override fun initFragmentsMap(): Map<String, ContainerFragment> {
+        return MainActivityFragmentsEnum.values().associateBy { it.getClassName() }
     }
 
     override fun getFragmentContainerId(): Int {
         return R.id.fragment_container_main_activity
     }
 
-    override fun reset(): Boolean {
-        return true
+    override fun resetToRoot() {
+        resetFragment(MainActivityFragmentsEnum.HOME)
     }
 
-    fun resetFragmentByIndex(position: Int) {
-        MainActivityFragmentEnum.getFragmentByIndex(
-            position
-        )?.let {
-            resetFragment(it,null)
+    override fun getFragmentByIndex(index: Int) : ContainerFragment?{
+        return when(index){
+            BAR_INDEX_HOME -> MainActivityFragmentsEnum.HOME
+            BAR_INDEX_PROFILE -> MainActivityFragmentsEnum.PROFILE
+            else -> null
         }
+    }
+}
+
+enum class MainActivityFragmentsEnum(private val fragmentClassInstance: Class<*>, val bottomIndex: Int): ContainerFragment{
+
+    HOME(FragmentHome::class.java, FragmentManagerMainActivityImpl.BAR_INDEX_HOME),
+    PROFILE(FragmentProfile::class.java, FragmentManagerMainActivityImpl.BAR_INDEX_PROFILE);
+
+    override fun getFragmentClass(): Class<*> {
+        return fragmentClassInstance
     }
 }
