@@ -21,7 +21,7 @@ data class Profile(
 class BackendApiImpl : BackendApi {
     override suspend fun login(phone: String, code: String, state: Int): LoginResponse {
         delay(500)
-        return LoginResponse("sample-token")
+        return LoginResponse(phone)
     }
 
     override suspend fun loadProfile(token: String): Profile{
