@@ -1,6 +1,7 @@
 package com.aataganov.muvermockup
 
 import android.text.format.DateUtils
+import com.aataganov.muvermockup.helpers.CommonHelper
 import kotlinx.coroutines.delay
 
 interface BackendApi {
@@ -59,6 +60,9 @@ data class DrivingManagerState(
 
 
 class DrivingManagerImpl : DrivingManager {
+    companion object{
+        private const val SIMULATE_FAIL_RATE: Long = DateUtils.SECOND_IN_MILLIS / 4
+    }
 
 
     var applicationStates: HashMap<String, Boolean> = hashMapOf()
@@ -75,7 +79,7 @@ class DrivingManagerImpl : DrivingManager {
         delay(500)
 
         //imitate failure
-        if(simulateFail()){
+        if(CommonHelper.simulateFail()){
             return CommandExecutionResult(false)
         }
 
@@ -89,11 +93,6 @@ class DrivingManagerImpl : DrivingManager {
         }
         delay(500)
         return CommandExecutionResult(true)
-    }
-
-    private fun simulateFail(): Boolean{
-        val time = System.currentTimeMillis()
-        return (time % DateUtils.SECOND_IN_MILLIS < 100)
     }
 
     override suspend fun getState(): DrivingManagerState {

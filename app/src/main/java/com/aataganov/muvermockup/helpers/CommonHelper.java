@@ -6,6 +6,7 @@ import android.content.pm.ApplicationInfo;
 import android.graphics.Bitmap;
 import android.os.Looper;
 import android.support.annotation.Nullable;
+import android.text.format.DateUtils;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import io.reactivex.observers.DisposableObserver;
 import kotlinx.coroutines.Job;
 
 public class CommonHelper {
+    private static final long SIMULATE_FAIL_RATE = DateUtils.SECOND_IN_MILLIS / 4;
     public static void updateViewVisibility(View view, boolean show){
         if(show){
             view.setVisibility(View.VISIBLE);
@@ -91,6 +93,10 @@ public class CommonHelper {
             bitmap.recycle();
         }
     }
+    public static boolean simulateFail(){
+        return System.currentTimeMillis() % DateUtils.SECOND_IN_MILLIS < SIMULATE_FAIL_RATE;
+    }
+
 
     public static void hideKeyboard(Activity activity) {
         InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
