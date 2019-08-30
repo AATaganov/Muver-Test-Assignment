@@ -17,7 +17,7 @@ import io.reactivex.observers.DisposableObserver;
 import kotlinx.coroutines.Job;
 
 public class CommonHelper {
-    private static final long SIMULATE_FAIL_RATE = DateUtils.SECOND_IN_MILLIS / 4;
+    private static final long SIMULATE_FAIL_RATE = DateUtils.SECOND_IN_MILLIS / 3;
     public static void updateViewVisibility(View view, boolean show){
         if(show){
             view.setVisibility(View.VISIBLE);
